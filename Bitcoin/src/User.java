@@ -1,19 +1,31 @@
 import java.security.*;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.math.BigInteger;
 import java.util.Base64;
-
 public class User {
+
     private PrivateKey privateKey;
     public PublicKey publicKey;
+
+    public static KeyPair generateKeyPair() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
+        ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
+        keyPairGenerator.initialize(ecSpec, new SecureRandom());
+        return keyPairGenerator.generateKeyPair();
+    }
 
     public User() {
         try {
             // Generate key pair
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2048);
-            KeyPair keyPair = keyPairGenerator.generateKeyPair();
-
-            // Set private and public keys
+            KeyPair keyPair = null;
+            try {
+                keyPair = generateKeyPair();
+            } catch (InvalidAlgorithmParameterException e) {
+                throw new RuntimeException(e);
+            }
             this.privateKey = keyPair.getPrivate();
             this.publicKey = keyPair.getPublic();
         } catch (NoSuchAlgorithmException ex) {
@@ -21,7 +33,7 @@ public class User {
         }
     }
 
-    public PrivateKey getPrivateKey() {
+    protected PrivateKey getPrivateKey() {
         return privateKey;
     }
 
@@ -29,31 +41,32 @@ public class User {
         return publicKey;
     }
 
-    protected byte[] signTransaction(String transactionHash) {
-        byte[] signature = null;
-        try {
-            Signature sign = Signature.getInstance("SHA256withRSA");
-            PrivateKey privatekey = this.getPrivateKey();
-            sign.initSign(privateKey); //takes private key
-            sign.update(transactionHash.getBytes()); //In the case of the code you provided, transactionHash.getBytes() is passed as an argument to sign.update(), which means that the message digest is updated with the bytes of the transaction hash.
-            signature = sign.sign();
-        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException ex) {
-            ex.printStackTrace();
-        }
-        return signature;
+    public String getPublicKeyString() {
+        return  ((ECPublicKey) publicKey).getW().getAffineX().toString(16)
+                + ((ECPublicKey) publicKey).getW().getAffineY().toString(16);
     }
 
-    protected boolean verifyTransaction(Transaction transaction, byte[] signature) {
-        try {
-            Signature sign = Signature.getInstance("SHA256withRSA");
-            sign.initVerify(transaction.getSender()); //takes public key as an input
-            sign.update(transaction.getTransactionId().getBytes());
-            return sign.verify(signature); // pass raw binary signature
-        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException ex) {
-            ex.printStackTrace();
-            return false;
-        }
+    protected String getPrivateKeyString(){
+        return ((ECPrivateKey) privateKey).getS().toString(16);
+    }
+
+    protected void setPrivateKey(PrivateKey privateKey) {
+        this.privateKey = privateKey;
+    }
+
+    protected void setPublicKey(PublicKey publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    protected BigInteger generateDigitalSignature( BigInteger time, String message) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        Signature signature = Signature.getInstance("SHA256withECDSA");
+        signature.initSign(privateKey);
+        signature.update(time.toByteArray());
+        signature.update(message.getBytes());
+        byte[] signatureBytes = signature.sign();
+        return new BigInteger(signatureBytes);
     }
 
 }
+
 
