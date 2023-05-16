@@ -5,6 +5,7 @@ import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.math.BigInteger;
 import java.util.Base64;
+
 public class User {
 
     private PrivateKey privateKey;

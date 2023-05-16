@@ -29,14 +29,17 @@ public class Miner {
     }
 
 
-    public static BigInteger mine(String inputString, BigInteger inputInteger1, BigInteger inputInteger2, BigInteger inputInteger3, int zeros) {
+
+    // we need to pair up transaction and signature !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    public static BigInteger mine(String transaction, BigInteger previousHash, BigInteger nonceInt, int zeros) {
         BigInteger startRange = BigInteger.ZERO;
         BigInteger endRange = BigInteger.valueOf(1_000_000_000_000L);
 
         BigInteger nonce = startRange;
 
         while (nonce.compareTo(endRange) <= 0) {
-            String input = inputString + inputInteger1 + inputInteger2 + inputInteger3 + nonce.toString();
+            String input = transaction + previousHash + nonceInt + nonce.toString();
             String hash = calculateHash(input);
 
             if (hasLeadingZeros(hash, zeros)) {

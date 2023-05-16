@@ -23,6 +23,8 @@ public static void main(String[] args) {
         System.out.println("Public Key: " + (user1.getPublicKeyString()));
         System.out.println(user1.getPublicKeyString());
 
+        Transaction transaction = new Transaction(user1.getPublicKey(), user1.getPublicKey(), 10);
+        System.out.println(transaction.getIndex());
 
         // Generate digital signature
         BigInteger signature = user1.generateDigitalSignature(time, message);
@@ -44,7 +46,7 @@ public static void main(String[] args) {
                 BigInteger inputInteger3 = new BigInteger("456789123");
                 int zeros = 4;
 
-                BigInteger nonce = miner.mine(inputString, inputInteger1, inputInteger2, inputInteger3, zeros);
+                BigInteger nonce = miner.mine(inputString, inputInteger1, inputInteger2, zeros);
                 if (nonce != null) {
                         System.out.println("Valid nonce found: " + nonce);
                 } else {

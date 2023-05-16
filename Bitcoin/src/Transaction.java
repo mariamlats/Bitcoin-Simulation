@@ -3,19 +3,26 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.security.*;
-
+import java.util.UUID;
 public class Transaction {
-    private String transactionId;
-    private String index;
+    // add time variable
+    // if its valid or not
+    // users need a list of all the transactions they create
+    // has the transaction and that will be the transaction id
+    // attach the transactionid with the correct user
+    private String transactionId; // hash the transaction
+    private UUID index; // we can come back to it
     private PublicKey sender;
-    private PublicKey recipient;
+    public PublicKey recipient;
     private double amount;
 
-    public Transaction(PublicKey sender, PublicKey recipient, double amount, String index) {
+
+
+    public Transaction(PublicKey sender, PublicKey recipient, double amount) {
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
-        this.index = index;
+        this.index = UUID.randomUUID();
         this.transactionId = calculateHash();
     }
 
@@ -41,6 +48,11 @@ public class Transaction {
     public String getTransactionId() {
         return transactionId;
     }
+
+    public UUID getIndex() {
+        return index;
+    }
 }
+
 
 
