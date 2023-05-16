@@ -1,22 +1,15 @@
-import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.security.*;
-import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.ECPublicKey;
-
 public class Main {
 public static void main(String[] args) {
         try {
-                String[] stringArray = new String[10];
-                stringArray[0] = "user1,user2,10";
+
         User user1 = new User();
         // Generate key pair
         KeyPair keyPair = user1.generateKeyPair();
         user1.setPrivateKey(keyPair.getPrivate());
         user1.setPublicKey(keyPair.getPublic());
         // Generate random value and message
-        BigInteger time = new BigInteger("1");
-        String message = "Hello, world!";
 
         // Print the keys
         System.out.println("Private Key: " + user1.getPrivateKeyString());
@@ -27,13 +20,13 @@ public static void main(String[] args) {
         System.out.println(transaction.getIndex());
 
         // Generate digital signature
-        BigInteger signature = user1.generateDigitalSignature(time, message);
+        BigInteger signature = user1.generateDigitalSignature(transaction);
         System.out.println("Digital Signature: " + signature.toString());
 
         Miner miner = new Miner();
         // Verify digital signature
 
-        boolean isSignatureValid = miner.verifyDigitalSignature(user1.getPublicKey(), time, message, signature);
+        boolean isSignatureValid = miner.verifyDigitalSignature(transaction);
         if (isSignatureValid) {
         System.out.println("Digital Signature is valid!");
         } else {

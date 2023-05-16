@@ -1,8 +1,10 @@
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.util.Base64;
-import java.security.*;
 import java.util.UUID;
 public class Transaction {
     // add time variable
@@ -10,12 +12,12 @@ public class Transaction {
     // users need a list of all the transactions they create
     // has the transaction and that will be the transaction id
     // attach the transactionid with the correct user
-    private String transactionId; // hash the transaction
+    private String transactionHash; // hash the transaction
     private UUID index; // we can come back to it
     private PublicKey sender;
     public PublicKey recipient;
     private double amount;
-
+    public BigInteger transactionSignature;
 
 
     public Transaction(PublicKey sender, PublicKey recipient, double amount) {
@@ -23,7 +25,8 @@ public class Transaction {
         this.recipient = recipient;
         this.amount = amount;
         this.index = UUID.randomUUID();
-        this.transactionId = calculateHash();
+        this.transactionHash = calculateHash();
+        this.transactionSignature = null;
     }
 
     private String calculateHash() {
@@ -45,14 +48,25 @@ public class Transaction {
         return sender;
     }
 
-    public String getTransactionId() {
-        return transactionId;
+    public String getTransactionHash() {
+        return transactionHash;
     }
 
     public UUID getIndex() {
         return index;
     }
-}
+    protected void setTransactionSignature(BigInteger transactionSignature) {
+        this.transactionSignature = transactionSignature;
+    }
+    protected BigInteger getTransactionSignature() {return transactionSignature;}
+    public byte[] getIndexBytes(){
 
+        ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]);
+        byteBuffer.putLong(index.getMostSignificantBits());
+        byteBuffer.putLong(index.getLeastSignificantBits());
+
+        return byteBuffer.array();
+    }
+}
 
 

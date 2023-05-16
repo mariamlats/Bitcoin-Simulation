@@ -1,13 +1,7 @@
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.UUID;
-import java.security.*;
-import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.ECPublicKey;
-import java.security.spec.ECGenParameterSpec;
-import java.security.spec.ECParameterSpec;
-import java.math.BigInteger;
-import java.util.Base64;
 public class Miner {
     private final UUID id;
 
@@ -20,17 +14,14 @@ public class Miner {
         return id;
     }
 
-    protected static boolean verifyDigitalSignature(PublicKey publicKey, BigInteger time, String message, BigInteger signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    protected static boolean verifyDigitalSignature(Transaction transaction) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature signatureVerifier = Signature.getInstance("SHA256withECDSA");
-        signatureVerifier.initVerify(publicKey);
-        signatureVerifier.update(time.toByteArray());
-        signatureVerifier.update(message.getBytes());
-        return signatureVerifier.verify(signature.toByteArray());
+        signatureVerifier.initVerify(transaction.getSender());
+        signatureVerifier.update(transaction.getIndexBytes());
+        signatureVerifier.update(transaction.getTransactionHash().getBytes());
+        return signatureVerifier.verify(transaction.getTransactionSignature().toByteArray());
     }
 
-
-
-    // we need to pair up transaction and signature !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     public static BigInteger mine(String transaction, BigInteger previousHash, BigInteger nonceInt, int zeros) {
         BigInteger startRange = BigInteger.ZERO;
@@ -53,6 +44,7 @@ public class Miner {
     }
 
     //It uses the SHA-256 algorithm to calculate the hash of the input.
+    // is this transaction hash or block hash???????????????????????????
     protected static String calculateHash(String data) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -64,6 +56,7 @@ public class Miner {
         return null;
     }
 
+    // what hash is this as an input???????????????????
     private static String bytesToHex(byte[] hash) {
         StringBuilder hexString = new StringBuilder(2 * hash.length);
         for (byte b : hash) {
@@ -81,6 +74,7 @@ public class Miner {
     //  the mining process is considered successful, and the current nonce is returned.
     //If no matching hash is found within the defined range, the mine method returns null
     // to indicate that the mining process was unsuccessful.
+    // inputs????????????????????????????????????????????????
     private static boolean hasLeadingZeros(String hash, int zeros) {
         int count = 0;
         for (int i = 0; i < hash.length(); i++) {

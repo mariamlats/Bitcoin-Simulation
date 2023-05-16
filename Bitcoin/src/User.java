@@ -1,11 +1,8 @@
+import java.math.BigInteger;
 import java.security.*;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECGenParameterSpec;
-import java.security.spec.ECParameterSpec;
-import java.math.BigInteger;
-import java.util.Base64;
-
 public class User {
 
     private PrivateKey privateKey;
@@ -59,15 +56,27 @@ public class User {
         this.publicKey = publicKey;
     }
 
-    protected BigInteger generateDigitalSignature( BigInteger time, String message) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    protected BigInteger generateDigitalSignature(Transaction transaction) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature signature = Signature.getInstance("SHA256withECDSA");
         signature.initSign(privateKey);
-        signature.update(time.toByteArray());
-        signature.update(message.getBytes());
+        signature.update(transaction.getIndexBytes());
+        signature.update(transaction.getTransactionHash().getBytes());
         byte[] signatureBytes = signature.sign();
         return new BigInteger(signatureBytes);
     }
 
+    protected void CreateTransaction(User recipient, double amount) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+        Transaction transaction = new Transaction(this.publicKey, recipient.getPublicKey(),amount);
+        transaction.setTransactionSignature(generateDigitalSignature(transaction));
+    }
+
+
+
+
+
+// create a transaction here  and it will automatically cretae transaction index and hash
+    //call generatedigitalsignature and give the transaction to the function
+    //
 }
 
 
