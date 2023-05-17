@@ -53,12 +53,9 @@ public class Transaction {
     public double getAmount() {
         return amount;
     }
-
-
     public String getTransactionHash() {
         return transactionHash;
     }
-
     public UUID getIndex() {
         return index;
     }
@@ -75,12 +72,9 @@ public class Transaction {
         return byteBuffer.array();
     }
 
-
     protected void setSender(PublicKey publicKey) {
         this.sender = publicKey;
     }
-
-
 
 }
 

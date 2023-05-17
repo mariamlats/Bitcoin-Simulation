@@ -22,6 +22,7 @@ public static void main(String[] args) {
         user2.setPrivateKey(keyPair2.getPrivate());
         user2.setPublicKey(keyPair2.getPublic());
 
+
         Transaction transaction1 = user1.createTransaction(user2,10);
         Transaction transaction2 = user2.createTransaction(user1,15);
         //System.out.println(transaction1.getTransactionSignature());
@@ -34,7 +35,7 @@ public static void main(String[] args) {
 
         // Verify digital signature
         // we changed the sender so it would become invalid
-        transaction1.setSender(user2.getPublicKey());
+        //transaction1.setSender(user2.getPublicKey());
         boolean isSignatureValid = miner.verifyDigitalSignature(transaction1);
         if (isSignatureValid) {
         System.out.println("Digital Signature is valid!");

@@ -43,15 +43,18 @@ public class Miner {
 
             if (hasLeadingZeros(hash, zeros)) {
                 Block block = createBlock(previousHash, hash, transactions, nonce);
-                System.out.println(block.getCurrentHash());
-                System.out.println(block.getPreviousHash());
-                System.out.println(block.getNonce());
-                for (Transaction transaction : transactions) {
+          //      System.out.println(block.getCurrentHash());
+          //      System.out.println(block.getPreviousHash());
+          //      System.out.println(block.getNonce());
+            //    System.out.println(transactions[0].getSender());
+              //  System.out.println(transactions[0].getRecipient());
+              /*  for (Transaction transaction : transactions) {
                     System.out.println("Sender -----------------------------");
                     System.out.println(transaction.getSender());
                     System.out.println("recipient -----------------------------");
                     System.out.println(transaction.getRecipient());
-                }
+
+                } */
                 return nonce;
             }
 
