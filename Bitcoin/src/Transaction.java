@@ -12,12 +12,12 @@ public class Transaction {
     // users need a list of all the transactions they create
     // has the transaction and that will be the transaction id
     // attach the transactionid with the correct user
-    private String transactionHash; // hash the transaction
+    protected String transactionHash; // hash the transaction
     private UUID index; // we can come back to it
     private PublicKey sender;
-    public PublicKey recipient;
+    private PublicKey recipient;
     private double amount;
-    public BigInteger transactionSignature;
+    protected BigInteger transactionSignature;
 
 
     public Transaction(PublicKey sender, PublicKey recipient, double amount) {
@@ -47,6 +47,13 @@ public class Transaction {
     public PublicKey getSender() {
         return sender;
     }
+    public PublicKey getRecipient() {
+        return recipient;
+    }
+    public double getAmount() {
+        return amount;
+    }
+
 
     public String getTransactionHash() {
         return transactionHash;
@@ -67,6 +74,14 @@ public class Transaction {
 
         return byteBuffer.array();
     }
+
+
+    protected void setSender(PublicKey publicKey) {
+        this.sender = publicKey;
+    }
+
+
+
 }
 
 

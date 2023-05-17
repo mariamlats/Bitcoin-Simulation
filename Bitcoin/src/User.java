@@ -65,9 +65,10 @@ public class User {
         return new BigInteger(signatureBytes);
     }
 
-    protected void CreateTransaction(User recipient, double amount) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    protected Transaction createTransaction(User recipient, double amount) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         Transaction transaction = new Transaction(this.publicKey, recipient.getPublicKey(),amount);
         transaction.setTransactionSignature(generateDigitalSignature(transaction));
+        return transaction;
     }
 
 

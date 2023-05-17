@@ -1,4 +1,5 @@
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.UUID;
@@ -22,33 +23,54 @@ public class Miner {
         return signatureVerifier.verify(transaction.getTransactionSignature().toByteArray());
     }
 
-
-    public static BigInteger mine(String transaction, BigInteger previousHash, BigInteger nonceInt, int zeros) {
+    //transaction = transactionsignature  unda wamovides transaction sheikras da mere gatardes hashshi
+    // list sheikmnas transactiebis da egre shemovides
+    // pair transaction hash and signature
+    // list of transactions
+    public static BigInteger mine(Transaction[] transactions, String previousHash, BigInteger nonceInt, int zeros) {
         BigInteger startRange = BigInteger.ZERO;
         BigInteger endRange = BigInteger.valueOf(1_000_000_000_000L);
 
         BigInteger nonce = startRange;
-
+        String data = "";
+        String hash = null;
         while (nonce.compareTo(endRange) <= 0) {
-            String input = transaction + previousHash + nonceInt + nonce.toString();
-            String hash = calculateHash(input);
+            for (int i = 0; i < transactions.length; i++) {
+                // differentiation problem for a signature and transactionhash
+                data += transactions[i].getTransactionSignature() + " " + transactions[i].getTransactionHash().toString() + " ";
+            }
+            hash = calculateHash(data, previousHash, nonceInt, zeros);
 
             if (hasLeadingZeros(hash, zeros)) {
+                Block block = createBlock(previousHash, hash, transactions, nonce);
+                System.out.println(block.getCurrentHash());
+                System.out.println(block.getPreviousHash());
+                System.out.println(block.getNonce());
+                for (Transaction transaction : transactions) {
+                    System.out.println("Sender -----------------------------");
+                    System.out.println(transaction.getSender());
+                    System.out.println("recipient -----------------------------");
+                    System.out.println(transaction.getRecipient());
+                }
                 return nonce;
             }
 
             nonce = nonce.add(BigInteger.ONE);
+
         }
 
         return null;
     }
 
-    //It uses the SHA-256 algorithm to calculate the hash of the input.
-    // is this transaction hash or block hash???????????????????????????
-    protected static String calculateHash(String data) {
+    private static String calculateHash(String data, String previousHash, BigInteger inputInteger2, int zeros) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedHash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
+            digest.update(data.getBytes(StandardCharsets.UTF_8));
+            digest.update(previousHash.getBytes(StandardCharsets.UTF_8));
+            digest.update(inputInteger2.toByteArray());
+            byte[] zerosByteArray = ByteBuffer.allocate(4).putInt(zeros).array();
+            digest.update(zerosByteArray);
+            byte[] encodedHash = digest.digest();
             return bytesToHex(encodedHash);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -56,7 +78,7 @@ public class Miner {
         return null;
     }
 
-    // what hash is this as an input???????????????????
+
     private static String bytesToHex(byte[] hash) {
         StringBuilder hexString = new StringBuilder(2 * hash.length);
         for (byte b : hash) {
@@ -74,7 +96,7 @@ public class Miner {
     //  the mining process is considered successful, and the current nonce is returned.
     //If no matching hash is found within the defined range, the mine method returns null
     // to indicate that the mining process was unsuccessful.
-    // inputs????????????????????????????????????????????????
+
     private static boolean hasLeadingZeros(String hash, int zeros) {
         int count = 0;
         for (int i = 0; i < hash.length(); i++) {
@@ -86,4 +108,9 @@ public class Miner {
         return count >= zeros;
     }
 
+    protected static Block createBlock (String previousHash, String  currentHash, Transaction[] transactions,  BigInteger nonce){
+        Block block = new Block(previousHash, currentHash, transactions, nonce);
+        return block;
+    }
 }
+
