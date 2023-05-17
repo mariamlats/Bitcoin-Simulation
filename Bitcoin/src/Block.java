@@ -32,9 +32,3 @@ public class Block {
 }
 
 
-// when the block is finished function
-// it sends the block to the blockchain
-// the blockchain checks the hashes and sees if its connected
-// if connected it creates a new branch //////////////
-// whenever a branch/fork is larger by x then its added to the final ledger
-// miners start from the xth one

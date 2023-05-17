@@ -2,13 +2,17 @@ import java.math.BigInteger;
 import java.security.*;
 
 // problems ------------------>
-//transaction = transactionsignature  unda wamovides transaction sheikras da mere gatardes hashshi
-// list sheikmnas transactiebis da egre shemovides
 // pair transaction hash and signature
 // differentiation problem for a signature and transactionhash in mine function of miner
 // balance checker, balance change, block fees
-// find nonce could return both nonce and hash to make it easier and faster
 
+// tasks:
+// when the block is finished function
+// it sends the block to the blockchain
+// the blockchain checks the hashes and sees if its connected
+// if connected it creates a new branch //////////////
+// whenever a branch/fork is larger by x then its added to the final ledger
+// miners start from the xth one
 public class Main {
 public static void main(String[] args) {
         try {
