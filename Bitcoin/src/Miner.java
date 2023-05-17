@@ -27,7 +27,7 @@ public class Miner {
     // list sheikmnas transactiebis da egre shemovides
     // pair transaction hash and signature
     // list of transactions
-    public static BigInteger mine(Transaction[] transactions, String previousHash, BigInteger nonceInt, int zeros) {
+    public static BigInteger nonceFinder(Transaction[] transactions, String previousHash, BigInteger nonceInt, int zeros) {
         BigInteger startRange = BigInteger.ZERO;
         BigInteger endRange = BigInteger.valueOf(1_000_000_000_000L);
 
@@ -42,19 +42,6 @@ public class Miner {
             hash = calculateHash(data, previousHash, nonceInt, zeros);
 
             if (hasLeadingZeros(hash, zeros)) {
-                Block block = createBlock(previousHash, hash, transactions, nonce);
-          //      System.out.println(block.getCurrentHash());
-          //      System.out.println(block.getPreviousHash());
-          //      System.out.println(block.getNonce());
-            //    System.out.println(transactions[0].getSender());
-              //  System.out.println(transactions[0].getRecipient());
-              /*  for (Transaction transaction : transactions) {
-                    System.out.println("Sender -----------------------------");
-                    System.out.println(transaction.getSender());
-                    System.out.println("recipient -----------------------------");
-                    System.out.println(transaction.getRecipient());
-
-                } */
                 return nonce;
             }
 
@@ -115,5 +102,19 @@ public class Miner {
         Block block = new Block(previousHash, currentHash, transactions, nonce);
         return block;
     }
+
+    protected Block mineBlock(Transaction[] transactions, String previousHash, BigInteger nonceInt, int zeros){
+        BigInteger nonce = nonceFinder(transactions,previousHash,nonceInt,zeros);
+        String data = "";
+        String hash = null;
+        for (int i = 0; i < transactions.length; i++) {
+            data += transactions[i].getTransactionSignature() + " " + transactions[i].getTransactionHash().toString() + " ";
+        }
+         hash = calculateHash(data, previousHash, nonceInt, zeros);
+        Block block = createBlock(previousHash, hash, transactions, nonce);
+
+        return block;
+    }
+
 }
 

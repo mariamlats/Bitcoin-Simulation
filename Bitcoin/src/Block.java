@@ -32,8 +32,6 @@ public class Block {
 }
 
 
-
-// create block which has all the necessary data which is:
 // when the block is finished function
 // it sends the block to the blockchain
 // the blockchain checks the hashes and sees if its connected

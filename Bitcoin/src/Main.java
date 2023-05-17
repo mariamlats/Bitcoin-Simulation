@@ -7,6 +7,7 @@ import java.security.*;
 // pair transaction hash and signature
 // differentiation problem for a signature and transactionhash in mine function of miner
 // balance checker, balance change, block fees
+// find nonce could return both nonce and hash to make it easier and faster
 
 public class Main {
 public static void main(String[] args) {
@@ -48,7 +49,7 @@ public static void main(String[] args) {
         String previoushash = "1";
         BigInteger nonceInt = new BigInteger("456789123");
         int zeros = 2;
-        BigInteger nonce= miner.mine(transactionlist,previoushash, nonceInt, zeros);
+        BigInteger nonce= miner.nonceFinder(transactionlist,previoushash, nonceInt, zeros);
 
         if (nonce != null) {
                 System.out.println("Valid nonce found: " + nonce);
@@ -56,7 +57,7 @@ public static void main(String[] args) {
                 System.out.println("No valid nonce found within the range.");
         }
 
-             //   System.out.println(miner.calculateHash(inputString + inputInteger1 + inputInteger2 + inputInteger3 + "2495"));
+        //System.out.println(miner.calculateHash(inputString + inputInteger1 + inputInteger2 + inputInteger3 + "2495"));
 
 
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | InvalidAlgorithmParameterException e) {
