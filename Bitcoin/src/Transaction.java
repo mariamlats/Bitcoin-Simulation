@@ -18,12 +18,13 @@ public class Transaction {
     private PublicKey recipient;
     private double amount;
     protected BigInteger transactionSignature;
-
+    public boolean validity;
 
     public Transaction(PublicKey sender, PublicKey recipient, double amount) {
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
+        this.validity = false;
         this.index = UUID.randomUUID();
         this.transactionHash = calculateHash();
         this.transactionSignature = null;
@@ -50,6 +51,7 @@ public class Transaction {
     public PublicKey getRecipient() {
         return recipient;
     }
+    public Boolean getValidity(){return validity;}
     public double getAmount() {
         return amount;
     }
@@ -75,6 +77,7 @@ public class Transaction {
     protected void setSender(PublicKey publicKey) {
         this.sender = publicKey;
     }
+    protected void setValid (boolean isvalid){this.validity = isvalid;}
 
 }
 
