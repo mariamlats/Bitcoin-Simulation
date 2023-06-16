@@ -24,17 +24,14 @@ public class Miner {
             transaction.setValid(isSignatureValid);
         }
         // HOW WILL THIS WORK ???????????????????????????????????????????????????????????????????????????
-        BigInteger nonceInt = new BigInteger("456789123");
+        BigInteger nonceInt = new BigInteger("123");
         Object[] values = nonceFinder(transactions, Main.previousHash,nonceInt );
         BigInteger currenthash = (BigInteger) values[0];
         BigInteger nonce = (BigInteger) values[1];
-        Block block = new Block(Main.previousHash, currenthash, transactions, nonce);
-        return block;
+
+        return new Block(Main.previousHash, currenthash, transactions, nonce);
         }
 
-    //transaction = transactionsignature  unda wamovides transaction sheikras da mere gatardes hashshi
-    // list sheikmnas transactiebis da egre shemovides
-    // pair transaction hash and signature
 
     protected  boolean verifyDigitalSignature(Transaction transaction) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature signatureVerifier = Signature.getInstance("SHA256withECDSA");
@@ -51,22 +48,21 @@ public class Miner {
         BigInteger nonce = startRange;
         String data = "";
         BigInteger hash = null;
+
+
         while (nonce.compareTo(endRange) <= 0) {
             for (int i = 0; i < transactions.length; i++) {
                 // differentiation problem for a signature and transactionhash
-                data += transactions[i].getTransactionSignature() + " " + transactions[i].getTransactionHash() + " ";
+                data += transactions[i].getTransactionSignature().toString() + " " + transactions[i].getTransactionHash() + " ";
             }
+
             hash = calculateHash(data, previousHash, nonceInt);
 
             if (hasLeadingZeros(String.valueOf(hash), Main.zeros)) {
                 return new Object[] { hash, nonce };
-
             }
-
             nonce = nonce.add(BigInteger.ONE);
-
         }
-
         return null;
     }
 
@@ -78,26 +74,13 @@ public class Miner {
             digest.update(inputInteger2.toByteArray());
             byte[] zerosByteArray = ByteBuffer.allocate(4).putInt(Main.zeros).array();
             digest.update(zerosByteArray);
-            BigInteger b = new BigInteger(1,digest.digest());
-            return b;
+            return new BigInteger(1,digest.digest());
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-
-    private static String bytesToHex(byte[] hash) {
-        StringBuilder hexString = new StringBuilder(2 * hash.length);
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
-    }
 
     //  method, which counts the number of leading zeros in the hash.
     //  If the count is equal to or greater than the specified zeros,
@@ -108,12 +91,13 @@ public class Miner {
     private static boolean hasLeadingZeros(String hash, int zeros) {
         int count = 0;
         for (int i = 0; i < hash.length(); i++) {
-            if (hash.charAt(i) != '0') {
-                break;
+            if (hash.charAt(i) == '0') {
+                count++;}
+            if (count >= zeros) {
+                return true;  // Return true if the required number of leading zeros is reached
             }
-            count++;
         }
-        return count >= zeros;
+        return false;  // Return false if the required number of leading zeros is not reached
     }
 
 }

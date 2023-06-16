@@ -1,6 +1,6 @@
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -13,10 +13,10 @@ public class Transaction {
     // has the transaction and that will be the transaction id
     // attach the transactionid with the correct user
     protected String transactionHash; // hash the transaction
-    private UUID index; // we can come back to it
-    private PublicKey sender;
-    private PublicKey recipient;
-    private double amount;
+    private final UUID index; // we can come back to it
+    private final PublicKey sender;
+    private final PublicKey recipient;
+    private final double amount;
     protected BigInteger transactionSignature;
     public boolean validity;
 
@@ -31,14 +31,14 @@ public class Transaction {
     }
 
     private String calculateHash() {
-        String dataToHash = sender.toString() + recipient.toString() + Double.toString(amount) + index;
+        String dataToHash = sender.toString() + recipient.toString() + amount + index;
         String hash = null;
 
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] bytes = digest.digest(dataToHash.getBytes("UTF-8"));
+            byte[] bytes = digest.digest(dataToHash.getBytes(StandardCharsets.UTF_8));
             hash = Base64.getEncoder().encodeToString(bytes);
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+        } catch (NoSuchAlgorithmException ex) {
             ex.printStackTrace();
         }
 
@@ -61,11 +61,7 @@ public class Transaction {
             return recipient;
         }
 
-        public Boolean getValidity() {
-            return validity;
-        }
-
-        public double getAmount() {
+    public double getAmount() {
             return amount;
         }
 
@@ -73,11 +69,7 @@ public class Transaction {
             return transactionHash;
         }
 
-        public UUID getIndex() {
-            return index;
-        }
-
-        protected void setTransactionSignature(BigInteger transactionSignature) {
+    protected void setTransactionSignature(BigInteger transactionSignature) {
             this.transactionSignature = transactionSignature;
         }
 
@@ -94,11 +86,7 @@ public class Transaction {
             return byteBuffer.array();
         }
 
-        protected void setSender(PublicKey publicKey) {
-            this.sender = publicKey;
-        }
-
-        protected void setValid(boolean isvalid) {
+    protected void setValid(boolean isvalid) {
             this.validity = isvalid;
         }
 

@@ -1,15 +1,7 @@
 import java.math.BigDecimal;
 import java.security.*;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.math.BigInteger;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-
-
 
 
 // problems ------------------>
@@ -18,38 +10,25 @@ import java.util.HashMap;
 // balance checker, balance change, block fees
 
 
-// tasks:
-// when the block is finished function
-// list of transactions from where miner chooses transactions randomly
-// and when its added to the ledger the transaction is removed from the list
-// it sends the block to the blockchain
-// the blockchain checks the hashes and sees if its connected
-// if connected it creates a new branch //////////////
-// whenever a branch/fork is larger by x then its added to the final ledger
-// miners start from the xth one
-// SENDER AND RECIPIENT CANT BE THE SAME
-
 public class Main {
         public static BigInteger previousHash = BigInteger.valueOf(123);
         public static int zeros = 2;
 
-        public static Object[] blockDecoder(Block block) {       //Es Methodi ubralod ighebs bloks da shlis transaqciis istoriad, previous hashad da current hashad
+        public static Object[] blockDecoder(Block block) {
                 Transaction[] transactions = block.getTransactions();
                 int transLength = transactions.length;
                 BigInteger[][] sortedTransactionList = new BigInteger[transLength][4]; // Keeps all the transaction data
 
                 for (int i = 0; i < transLength; i++) {
                         Transaction transaction = transactions[i];
-                        sortedTransactionList[i][0] = new BigInteger(transaction.getSenderString().replaceAll("[^\\d]", ""));
-                        sortedTransactionList[i][1] = new BigInteger(transaction.getRecipientString().replaceAll("[^\\d]", ""));
+                        sortedTransactionList[i][0] = new BigInteger(transaction.getSenderString().replaceAll("\\D", ""));
+                        sortedTransactionList[i][1] = new BigInteger(transaction.getRecipientString().replaceAll("\\D", ""));
                         sortedTransactionList[i][2] = BigDecimal.valueOf(transaction.getAmount()).toBigInteger();
-                        sortedTransactionList[i][3] = new BigInteger(transaction.getTransactionHash().replaceAll("[^\\d]", ""));
+                        sortedTransactionList[i][3] = new BigInteger(transaction.getTransactionHash().replaceAll("\\D", ""));
 
                 }
                 BigInteger previousHash = (block.getPreviousHash());
                 BigInteger currHash = (block.getCurrentHash());
-                System.out.println();
-
 
                 return new Object[]{sortedTransactionList, previousHash, currHash};     //mere maghla vtvirtav sxvadasxva cvladebad
         }
@@ -57,7 +36,6 @@ public class Main {
         ///////////////////////// MAIN //////////////////////////
 
         public static void main(String[] args) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
-
 
                 Miner miner = new Miner();
                 try {
@@ -89,37 +67,34 @@ public class Main {
 
 
                         Block block = miner.setTransactions(selectedTransactions);
-//////////////////////////// needs to be tested from here
+
                         //Activates when we recieve a new block every Transaction
 
-//        Map<BigInteger, BigInteger[][]> TransactionMap = new HashMap<>();  //Map Mapping all the transactionData of a block to its hash is initialized
-//        Map<BigInteger, BigInteger> PrevHashMap = new HashMap<>();    // Map Mapping PreviousHash of a block to its hash is initialized
+ //       Map<BigInteger, BigInteger[][]> TransactionMap = new HashMap<>();  //Map Mapping all the transactionData of a block to its hash is initialized
+ //       Map<BigInteger, BigInteger> PrevHashMap = new HashMap<>();    // Map Mapping PreviousHash of a block to its hash is initialized
                         List<List<BigInteger>> BlockChain = new ArrayList<>();       //2Dlist of the BlockChain is intialized
                         Map<BigInteger, Double> Balance = new HashMap<>();   //Tavidanve Ukve datvirtulia
 
-                        int rowLength = 0;    //
-                        int maxCounter = 0;  // Just VariablesI'll be using
+                        int rowLength;    //
+                        int maxCounter;  // Just VariablesI'll be using
                         int safetyDifference = 4; //This is the number of how large a block needs to get to be varified
 
-                        // at this point we have a block (line 89)
+                        // at this point we have a block
                         //we recieve data from a thread
 
                         Object[] result = blockDecoder(block);
-                        System.out.println(result);
                         BigInteger[][] sortedTransactionList = (BigInteger[][]) result[0]; //The Block Transaction data     //
                         BigInteger prevHash = (BigInteger) result[1];   //Previous Hash of the Block                       // HERE I JUST RECIEVE THE DATA FORM THE BLOCKDECODER AND DISTRIBUTE THE DATA APROPRIATELY
                         BigInteger currHash = (BigInteger) result[2];  // Current Hash of the Block                       //
 
 
-//        TransactionMap.put(currHash, sortedTransactionList);   // not much happening
-//        PrevHashMap.put(currHash, prevHash);
+ //       TransactionMap.put(currHash, sortedTransactionList);   // not much happening
+ //       PrevHashMap.put(currHash, prevHash);
 
-                        double transactionAmount = 0;
+                        double transactionAmount;
                         BigInteger transactionSender = BigInteger.ZERO;
                         BigInteger transactionReceiver = BigInteger.ZERO;
-                        maxCounter = 0;
-
-                        maxCounter = 0; //this is the variable that keeps the length of the biggest fork
+                        maxCounter = 0;//this is the variable that keeps the length of the biggest fork
                         for (int i = 0; i < BlockChain.size(); i++) {          //
                                 List<BigInteger> innerList = BlockChain.get(i);   // FOR LOOP ITERATING OVER THE BLOCKCHAIN LIST
                                 for (int j = 0; j < innerList.size(); j++) {     //
@@ -131,7 +106,7 @@ public class Main {
 
                                                 //AFTER REMOVAL "SUPPOSEDLY" ALL OF THIS SHIFTS UP BY ONE
 
-                                                if (BlockChain.get(i).get(j) == block.getCurrentHash()) {  //IF BLOCKCHAIN[I][J] HASH EQUALS THE PREVIOUS HASH OF THE INPUT BLOCK
+                                                if (Objects.equals(BlockChain.get(i).get(j), block.getCurrentHash())) {  //IF BLOCKCHAIN[I][J] HASH EQUALS THE PREVIOUS HASH OF THE INPUT BLOCK
                                                         for (int k = 0; k <= j; k++) {                                            //AM BLOKAMDE DATA CHAAQVS BOLOSHI QVEMOT
                                                                 BlockChain.get(BlockChain.size()).add(k, BlockChain.get(i).get(k));  //
                                                                 BlockChain.get(BlockChain.size()).add(k + 1, block.getCurrentHash());  //AXAL FORKS IWYEBS

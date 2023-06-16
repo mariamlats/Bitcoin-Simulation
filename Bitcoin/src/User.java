@@ -1,7 +1,5 @@
 import java.math.BigInteger;
 import java.security.*;
-import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECGenParameterSpec;
 public class User {
 
@@ -18,7 +16,7 @@ public class User {
     public User() {
         try {
             // Generate key pair
-            KeyPair keyPair = null;
+            KeyPair keyPair;
             try {
                 keyPair = generateKeyPair();
             } catch (InvalidAlgorithmParameterException e) {
@@ -37,22 +35,6 @@ public class User {
 
     public PublicKey getPublicKey() {
         return publicKey;
-    }
-    public static BigInteger convertPrivateKeyToBigInteger(PrivateKey privateKey) {
-        return new BigInteger(1, privateKey.getEncoded());
-    }
-
-    public static BigInteger convertPublicKeyToBigInteger(PublicKey publicKey) {
-        return new BigInteger(1, publicKey.getEncoded());
-    }
-
-    public String getPublicKeyString() {
-        return  ((ECPublicKey) publicKey).getW().getAffineX().toString(16)
-                + ((ECPublicKey) publicKey).getW().getAffineY().toString(16);
-    }
-
-    protected String getPrivateKeyString(){
-        return ((ECPrivateKey) privateKey).getS().toString(16);
     }
 
     protected void setPrivateKey(PrivateKey privateKey) {
@@ -79,12 +61,6 @@ public class User {
     }
 
 
-
-
-
-// create a transaction here  and it will automatically cretae transaction index and hash
-    //call generatedigitalsignature and give the transaction to the function
-    //
 }
 
 
