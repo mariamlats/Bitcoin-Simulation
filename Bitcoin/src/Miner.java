@@ -26,7 +26,7 @@ public class Miner {
         // HOW WILL THIS WORK ???????????????????????????????????????????????????????????????????????????
         BigInteger nonceInt = new BigInteger("456789123");
         Object[] values = nonceFinder(transactions, Main.previousHash,nonceInt );
-        String currenthash = (String) values[0];
+        BigInteger currenthash = (BigInteger) values[0];
         BigInteger nonce = (BigInteger) values[1];
         Block block = new Block(Main.previousHash, currenthash, transactions, nonce);
         return block;
@@ -45,12 +45,12 @@ public class Miner {
     }
 
 
-    public static Object[] nonceFinder(Transaction[] transactions, String previousHash, BigInteger nonceInt) {
+    public static Object[] nonceFinder(Transaction[] transactions, BigInteger previousHash, BigInteger nonceInt) {
         BigInteger startRange = BigInteger.ZERO;
         BigInteger endRange = BigInteger.valueOf(1_000_000_000_000L);
         BigInteger nonce = startRange;
         String data = "";
-        String hash = null;
+        BigInteger hash = null;
         while (nonce.compareTo(endRange) <= 0) {
             for (int i = 0; i < transactions.length; i++) {
                 // differentiation problem for a signature and transactionhash
@@ -58,7 +58,7 @@ public class Miner {
             }
             hash = calculateHash(data, previousHash, nonceInt);
 
-            if (hasLeadingZeros(hash, Main.zeros)) {
+            if (hasLeadingZeros(String.valueOf(hash), Main.zeros)) {
                 return new Object[] { hash, nonce };
 
             }
@@ -70,16 +70,16 @@ public class Miner {
         return null;
     }
 
-    private static String calculateHash(String data, String previousHash, BigInteger inputInteger2) {
+    private static BigInteger calculateHash(String data, BigInteger previousHash, BigInteger inputInteger2) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.update(data.getBytes(StandardCharsets.UTF_8));
-            digest.update(previousHash.getBytes(StandardCharsets.UTF_8));
+            digest.update(previousHash.toByteArray());
             digest.update(inputInteger2.toByteArray());
             byte[] zerosByteArray = ByteBuffer.allocate(4).putInt(Main.zeros).array();
             digest.update(zerosByteArray);
-            byte[] encodedHash = digest.digest();
-            return bytesToHex(encodedHash);
+            BigInteger b = new BigInteger(1,digest.digest());
+            return b;
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

@@ -45,40 +45,63 @@ public class Transaction {
         return hash;
     }
 
-    public PublicKey getSender() {
-        return sender;
-    }
-    public PublicKey getRecipient() {
-        return recipient;
-    }
-    public Boolean getValidity(){return validity;}
-    public double getAmount() {
-        return amount;
-    }
-    public String getTransactionHash() {
-        return transactionHash;
-    }
-    public UUID getIndex() {
-        return index;
-    }
-    protected void setTransactionSignature(BigInteger transactionSignature) {
-        this.transactionSignature = transactionSignature;
-    }
-    protected BigInteger getTransactionSignature() {return transactionSignature;}
-    public byte[] getIndexBytes(){
 
-        ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]);
-        byteBuffer.putLong(index.getMostSignificantBits());
-        byteBuffer.putLong(index.getLeastSignificantBits());
+        public PublicKey getSender() {
+            return sender;
+        }
 
-        return byteBuffer.array();
+        public String getSenderString() {
+            return sender.toString();
+        }
+        public String getRecipientString() {
+            return recipient.toString();
+        }
+
+        public PublicKey getRecipient() {
+            return recipient;
+        }
+
+        public Boolean getValidity() {
+            return validity;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public String getTransactionHash() {
+            return transactionHash;
+        }
+
+        public UUID getIndex() {
+            return index;
+        }
+
+        protected void setTransactionSignature(BigInteger transactionSignature) {
+            this.transactionSignature = transactionSignature;
+        }
+
+        protected BigInteger getTransactionSignature() {
+            return transactionSignature;
+        }
+
+        public byte[] getIndexBytes() {
+
+            ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]);
+            byteBuffer.putLong(index.getMostSignificantBits());
+            byteBuffer.putLong(index.getLeastSignificantBits());
+
+            return byteBuffer.array();
+        }
+
+        protected void setSender(PublicKey publicKey) {
+            this.sender = publicKey;
+        }
+
+        protected void setValid(boolean isvalid) {
+            this.validity = isvalid;
+        }
+
     }
-
-    protected void setSender(PublicKey publicKey) {
-        this.sender = publicKey;
-    }
-    protected void setValid (boolean isvalid){this.validity = isvalid;}
-
-}
 
 

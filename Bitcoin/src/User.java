@@ -38,6 +38,13 @@ public class User {
     public PublicKey getPublicKey() {
         return publicKey;
     }
+    public static BigInteger convertPrivateKeyToBigInteger(PrivateKey privateKey) {
+        return new BigInteger(1, privateKey.getEncoded());
+    }
+
+    public static BigInteger convertPublicKeyToBigInteger(PublicKey publicKey) {
+        return new BigInteger(1, publicKey.getEncoded());
+    }
 
     public String getPublicKeyString() {
         return  ((ECPublicKey) publicKey).getW().getAffineX().toString(16)
