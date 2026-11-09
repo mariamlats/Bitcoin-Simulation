@@ -1,0 +1,6 @@
+build/
+Bitcoin/out/
+**/.idea/
+*.iml
+*.class
+.DS_Store

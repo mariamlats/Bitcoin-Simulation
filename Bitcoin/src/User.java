@@ -1,66 +1,52 @@
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
-public class User {
+import java.util.Arrays;
+import java.util.Objects;
 
-    private PrivateKey privateKey;
-    public PublicKey publicKey;
-
-    public static KeyPair generateKeyPair() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
-        ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
-        keyPairGenerator.initialize(ecSpec, new SecureRandom());
-        return keyPairGenerator.generateKeyPair();
-    }
+/** An in-memory P-256 identity. Private keys are neither exposed nor persisted. */
+public final class User {
+    private final PrivateKey privateKey;
+    private final PublicKey publicKey;
 
     public User() {
         try {
-            // Generate key pair
-            KeyPair keyPair;
-            try {
-                keyPair = generateKeyPair();
-            } catch (InvalidAlgorithmParameterException e) {
-                throw new RuntimeException(e);
-            }
-            this.privateKey = keyPair.getPrivate();
-            this.publicKey = keyPair.getPublic();
-        } catch (NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
+            KeyPair pair = generateKeyPair();
+            privateKey = pair.getPrivate();
+            publicKey = pair.getPublic();
+        } catch (GeneralSecurityException ex) {
+            throw new IllegalStateException("Could not initialise an EC identity.", ex);
         }
     }
 
-    protected PrivateKey getPrivateKey() {
-        return privateKey;
+    public static KeyPair generateKeyPair() throws GeneralSecurityException {
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        generator.initialize(new ECGenParameterSpec("secp256r1"), new SecureRandom());
+        return generator.generateKeyPair();
     }
 
-    public PublicKey getPublicKey() {
-        return publicKey;
+    public PublicKey getPublicKey() { return publicKey; }
+
+    byte[] sign(Transaction transaction) throws GeneralSecurityException {
+        if (!Arrays.equals(publicKey.getEncoded(), transaction.getSender().getEncoded())) {
+            throw new IllegalArgumentException("An identity may sign only its own transactions.");
+        }
+        Signature signer = Signature.getInstance("SHA256withECDSA");
+        signer.initSign(privateKey);
+        signer.update(transaction.getPayload());
+        return signer.sign();
     }
 
-    protected void setPrivateKey(PrivateKey privateKey) {
-        this.privateKey = privateKey;
-    }
-
-    protected void setPublicKey(PublicKey publicKey) {
-        this.publicKey = publicKey;
-    }
-
-    protected BigInteger generateDigitalSignature(Transaction transaction) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        Signature signature = Signature.getInstance("SHA256withECDSA");
-        signature.initSign(privateKey);
-        signature.update(transaction.getIndexBytes());
-        signature.update(transaction.getTransactionHash().getBytes());
-        byte[] signatureBytes = signature.sign();
-        return new BigInteger(signatureBytes);
-    }
-
-    protected Transaction createTransaction(User recipient, double amount) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
-        Transaction transaction = new Transaction(this.publicKey, recipient.getPublicKey(),amount);
-        transaction.setTransactionSignature(generateDigitalSignature(transaction));
+    public Transaction createTransaction(User recipient, BigDecimal amount) throws GeneralSecurityException {
+        Objects.requireNonNull(recipient, "recipient");
+        Transaction transaction = new Transaction(publicKey, recipient.publicKey, amount);
+        transaction.attachSignature(sign(transaction));
         return transaction;
     }
 
-
+    public Transaction createTransaction(User recipient, double amount) throws GeneralSecurityException {
+        Transaction transaction = new Transaction(publicKey, Objects.requireNonNull(recipient).publicKey, amount);
+        transaction.attachSignature(sign(transaction));
+        return transaction;
+    }
 }
-
-

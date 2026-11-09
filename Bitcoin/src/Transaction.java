@@ -1,95 +1,95 @@
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.security.*;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.UUID;
-public class Transaction {
-    // add time variable
-    // if its valid or not
-    // users need a list of all the transactions they create
-    // has the transaction and that will be the transaction id
-    // attach the transactionid with the correct user
-    protected String transactionHash; // hash the transaction
-    private final UUID index; // we can come back to it
+
+/** A signed payment message for the local teaching simulation. */
+public final class Transaction {
+    private final UUID index = UUID.randomUUID();
     private final PublicKey sender;
     private final PublicKey recipient;
-    private final double amount;
-    protected BigInteger transactionSignature;
-    public boolean validity;
+    private final BigDecimal amount;
+    private final byte[] payload;
+    private final String transactionHash;
+    private byte[] signature;
 
     public Transaction(PublicKey sender, PublicKey recipient, double amount) {
-        this.sender = sender;
-        this.recipient = recipient;
-        this.amount = amount;
-        this.validity = false;
-        this.index = UUID.randomUUID();
-        this.transactionHash = calculateHash();
-        this.transactionSignature = null;
+        this(sender, recipient, finiteAmount(amount));
     }
 
-    private String calculateHash() {
-        String dataToHash = sender.toString() + recipient.toString() + amount + index;
-        String hash = null;
-
+    public Transaction(PublicKey sender, PublicKey recipient, BigDecimal amount) {
+        this.sender = Objects.requireNonNull(sender, "sender");
+        this.recipient = Objects.requireNonNull(recipient, "recipient");
+        Objects.requireNonNull(amount, "amount");
+        if (amount.signum() <= 0 || amount.precision() > 30 || Math.abs((long) amount.scale()) > 18) {
+            throw new IllegalArgumentException("Amount must be positive and fit the demo's numeric limits.");
+        }
+        this.amount = amount.stripTrailingZeros();
+        this.payload = encode();
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] bytes = digest.digest(dataToHash.getBytes(StandardCharsets.UTF_8));
-            hash = Base64.getEncoder().encodeToString(bytes);
+            this.transactionHash = Base64.getEncoder().encodeToString(
+                    MessageDigest.getInstance("SHA-256").digest(payload));
         } catch (NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
+            throw new IllegalStateException("SHA-256 is unavailable.", ex);
         }
-
-        return hash;
     }
 
-
-        public PublicKey getSender() {
-            return sender;
+    private static BigDecimal finiteAmount(double amount) {
+        if (!Double.isFinite(amount)) {
+            throw new IllegalArgumentException("Amount must be finite.");
         }
-
-        public String getSenderString() {
-            return sender.toString();
-        }
-        public String getRecipientString() {
-            return recipient.toString();
-        }
-
-        public PublicKey getRecipient() {
-            return recipient;
-        }
-
-    public double getAmount() {
-            return amount;
-        }
-
-        public String getTransactionHash() {
-            return transactionHash;
-        }
-
-    protected void setTransactionSignature(BigInteger transactionSignature) {
-            this.transactionSignature = transactionSignature;
-        }
-
-        protected BigInteger getTransactionSignature() {
-            return transactionSignature;
-        }
-
-        public byte[] getIndexBytes() {
-
-            ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]);
-            byteBuffer.putLong(index.getMostSignificantBits());
-            byteBuffer.putLong(index.getLeastSignificantBits());
-
-            return byteBuffer.array();
-        }
-
-    protected void setValid(boolean isvalid) {
-            this.validity = isvalid;
-        }
-
+        return BigDecimal.valueOf(amount);
     }
 
+    private byte[] encode() {
+        try {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            DataOutputStream data = new DataOutputStream(buffer);
+            data.writeUTF("transaction-v1");
+            writeBytes(data, sender.getEncoded());
+            writeBytes(data, recipient.getEncoded());
+            writeBytes(data, amount.toPlainString().getBytes(StandardCharsets.UTF_8));
+            data.writeLong(index.getMostSignificantBits());
+            data.writeLong(index.getLeastSignificantBits());
+            return buffer.toByteArray();
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
 
+    static void writeBytes(DataOutputStream data, byte[] bytes) throws IOException {
+        data.writeInt(bytes.length);
+        data.write(bytes);
+    }
+
+    void attachSignature(byte[] signature) {
+        if (this.signature != null || signature == null || signature.length == 0 || signature.length > 128) {
+            throw new IllegalArgumentException("A transaction accepts one bounded ECDSA signature.");
+        }
+        this.signature = signature.clone();
+    }
+
+    public boolean isSignatureValid() {
+        if (signature == null) return false;
+        try {
+            Signature verifier = Signature.getInstance("SHA256withECDSA");
+            verifier.initVerify(sender);
+            verifier.update(payload);
+            return verifier.verify(signature);
+        } catch (GeneralSecurityException ex) {
+            return false;
+        }
+    }
+
+    public PublicKey getSender() { return sender; }
+    public PublicKey getRecipient() { return recipient; }
+    public BigDecimal getAmount() { return amount; }
+    public String getTransactionHash() { return transactionHash; }
+    public byte[] getPayload() { return payload.clone(); }
+    public byte[] getTransactionSignature() { return signature == null ? null : signature.clone(); }
+}
